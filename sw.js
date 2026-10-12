@@ -1,6 +1,6 @@
 // Network-first service worker: always fresh when online (so pushed updates
 // show up on next launch), falls back to cache when offline.
-const CACHE = 'hub-v1';
+const CACHE = 'hub-v2';
 const NETWORK_TIMEOUT_MS = 3000;
 
 const SHELL = [
@@ -12,6 +12,10 @@ const SHELL = [
   'manifest.webmanifest',
   'shared/base.css',
   'shared/store.js',
+  'shared/art/palette.js',
+  'shared/art/textures.js',
+  'shared/art/sprites.js',
+  'shared/art/render.js',
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',

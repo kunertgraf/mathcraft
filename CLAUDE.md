@@ -29,6 +29,20 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
 - Public repo `kunertgraf/mathcraft`; GitHub Pages serves `main` at https://kunertgraf.github.io/mathcraft/
 - Pushing to `main` deploys automatically (about a minute). The iPad picks up changes on its next online launch.
 
+## Apps
+- `apps/fractions/` — **Pip's Mine**, the fractions game (design: `docs/fractions-game-design.md`).
+  Canvas game at a fixed 1024×768 logical resolution (`js/stage.js`), scenes `camp.js` / `mission.js`,
+  step types in `steps.js` (Place, Cut, Fill, Compare), mastery + step generation + rewards in `learn.js`.
+  Fractions are integers over 24ths (`DEN_LCM`) for exact arithmetic.
+- `apps/demo/` — minimal example of the app contract (not listed in `apps.json`).
+- Shared pixel-art kit: `shared/art/` (palette, procedural textures, sprites/font, render helpers).
+  Preview everything at `tools/artlab/`.
+
+## Testing the game
+- Open `apps/fractions/?test` to expose `window.__game` and `window.__advance(seconds)`, which steps the game
+  deterministically (browsers pause animation frames in hidden/background tabs, so don't rely on real time).
+- Drive input by dispatching PointerEvents on the canvas at `stage.ox + x * stage.scale` (logical → client).
+
 ## Commands
 - Run locally: `python3 -m http.server 8931 --bind 127.0.0.1`, then open http://127.0.0.1:8931/
 - Regenerate icons: `python3 scripts/make_icons.py`
