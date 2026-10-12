@@ -25,6 +25,10 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
 3. Optionally import `../../shared/base.css` and `../../shared/store.js`. To exit from inside an app:
    `parent.postMessage({ type: 'hub:exit' }, '*')`.
 
+## Deploy
+- Public repo `kunertgraf/mathcraft`; GitHub Pages serves `main` at https://kunertgraf.github.io/mathcraft/
+- Pushing to `main` deploys automatically (about a minute). The iPad picks up changes on its next online launch.
+
 ## Commands
 - Run locally: `python3 -m http.server 8931 --bind 127.0.0.1`, then open http://127.0.0.1:8931/
 - Regenerate icons: `python3 scripts/make_icons.py`
