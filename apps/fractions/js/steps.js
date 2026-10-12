@@ -615,10 +615,12 @@ export class FillStep {
 }
 
 // ===================================================================
-// COMPARE: which tunnel goes deeper?
+// COMPARE: which fraction is bigger? A pure number question; the
+// bar-and-ruler picture appears only afterwards, as the explanation.
 // ===================================================================
-const SHAFT = { top: 262, depth: 176, w: 72 };
-const SHAFT_X = [CX - 172, CX + 100];
+const CARD = { y: 196, w: 190, h: 136 };
+const CARD_X = [CX - 225, CX + 35];
+const BARS = { x: CX - 200, w: 440, y: [346, 412], h: 32 };
 
 export class CompareStep {
   constructor(m, spec) {
@@ -626,70 +628,67 @@ export class CompareStep {
     this.m = m;
     this.skill = 'compare';
     this.state = 'ready';
-    this.dug = [0, 0];
+    this.fill = { v: 0 };
     this.choice = null;
     this.nextBtn = { x: CX - 80, y: 474, w: 160, h: 62, label: 'Next' };
   }
 
   get parts() {
-    return ['Which tunnel goes deeper?'];
+    return ['Which fraction is bigger?'];
   }
 
   get fracs() {
     return [this.a, this.b];
   }
 
+  get bigger() {
+    const [[n1, d1], [n2, d2]] = this.fracs;
+    return n1 / d1 > n2 / d2 ? 0 : 1;
+  }
+
   draw(ctx) {
-    workbench(ctx, 164, 340);
-    const { top, depth, w } = SHAFT;
-    SHAFT_X.forEach((sx, i) => {
+    workbench(ctx, 172, 332);
+    // The two fraction cards.
+    CARD_X.forEach((x, i) => {
       const [n, d] = this.fracs[i];
-      // A cutaway of ground: grass cap, dirt then stone.
-      fillArea(ctx, 'grass', sx - 28, top - 24, w + 56, 24, 48, { outline: false });
-      fillArea(ctx, 'stone', sx - 28, top, w + 56, depth + 24, 48, { outline: false });
-      ctx.strokeStyle = INK;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(sx - 28, top - 24, w + 56, depth + 48);
-      const dug = this.dug[i] * (n / d) * depth;
-      if (dug > 0) {
-        ctx.fillStyle = '#0b0b18';
-        ctx.fillRect(sx, top - 24, w, dug + 24);
-      }
       const chosen = this.choice === i;
-      if (this.choice !== null && chosen) {
+      const lift = chosen ? -6 : 0;
+      ctx.fillStyle = INK;
+      ctx.fillRect(x - 3, CARD.y - 3 + lift, CARD.w + 6, CARD.h + 6);
+      ctx.fillStyle = '#f6f1e7';
+      ctx.fillRect(x, CARD.y + lift, CARD.w, CARD.h);
+      ctx.fillStyle = 'rgb(0 0 0 / 0.1)';
+      ctx.fillRect(x, CARD.y + lift + CARD.h - 6, CARD.w, 6);
+      drawFraction(ctx, n, d, x + CARD.w / 2, CARD.y + lift + 20, { scale: 5, colour: '#b4541e', shadow: null });
+      if (chosen) {
         ctx.strokeStyle = this.correct ? UI.good : UI.bad;
-        ctx.lineWidth = 5;
-        ctx.strokeRect(sx - 34, top - 30, w + 68, depth + 60);
+        ctx.lineWidth = 6;
+        ctx.strokeRect(x - 8, CARD.y - 8 + lift, CARD.w + 16, CARD.h + 16);
       }
-      drawFraction(ctx, n, d, sx + w / 2, top - 92, { scale: 3, colour: UI.accent });
     });
 
-    // Shared 0–1 ruler on the left, shown once digging starts.
-    if (this.choice !== null) {
-      const rx = SHAFT_X[0] - 70;
-      ctx.fillStyle = UI.ruler;
-      ctx.fillRect(rx, top, 14, depth);
-      ctx.strokeStyle = INK;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(rx, top, 14, depth);
-      drawText(ctx, '0', rx - 14, top - 8, { scale: 2, align: 'center' });
-      drawText(ctx, '1', rx - 14, top + depth - 8, { scale: 2, align: 'center' });
-      this.fracs.forEach(([n, d], i) => {
-        const yy = top + this.dug[i] * (n / d) * depth;
-        ctx.save();
-        ctx.strokeStyle = i === 0 ? '#ffffff' : UI.accent;
-        ctx.setLineDash([6, 6]);
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(rx, yy);
-        ctx.lineTo(SHAFT_X[1] + w + 40, yy);
-        ctx.stroke();
-        ctx.restore();
-      });
-      if (this.state === 'reveal') button(ctx, this.nextBtn);
-    } else {
-      helpText(ctx, 'Tap the deeper one.', top + depth + 50);
+    if (this.choice === null) {
+      helpText(ctx, 'Tap the bigger one.', 380);
+      return;
     }
+
+    // Explanation: each fraction as part of the same whole bar, over one 0–1 ruler.
+    const { x, w, h } = BARS;
+    this.fracs.forEach(([n, d], i) => {
+      const y = BARS.y[i];
+      drawGhost(ctx, x, y, w, h);
+      const filled = (n / d) * w * this.fill.v;
+      if (filled > 0) fillArea(ctx, i === this.bigger ? 'gold_ore' : 'planks', x, y, filled, h, h);
+      ctx.fillStyle = INK;
+      for (let k = 1; k < d; k++) ctx.fillRect(Math.round(x + (k / d) * w - 1), y, 2, h);
+      drawFraction(ctx, n, d, x - 40, y - 4, { scale: 2 });
+    });
+    const ry = BARS.y[1] + h + 10;
+    ctx.fillStyle = UI.ruler;
+    ctx.fillRect(x, ry, w, 6);
+    drawText(ctx, '0', x, ry + 12, { scale: 2, align: 'center' });
+    drawText(ctx, '1', x + w, ry + 12, { scale: 2, align: 'center' });
+    if (this.state === 'reveal') button(ctx, this.nextBtn);
   }
 
   down(p) {
@@ -698,49 +697,46 @@ export class CompareStep {
       return;
     }
     if (this.state !== 'ready') return;
-    const i = SHAFT_X.findIndex((sx) => p.x > sx - 90 && p.x < sx + SHAFT.w + 90 && p.y > 130 && p.y < SHAFT.top + SHAFT.depth + 60);
-    if (i < 0) return;
-    this.choose(i);
+    const i = CARD_X.findIndex((x) => hit({ x: x - 12, y: CARD.y - 12, w: CARD.w + 24, h: CARD.h + 24 }, p));
+    if (i >= 0) this.choose(i);
   }
 
   choose(i) {
-    const { m } = this;
-    const val = this.fracs.map(([n, d]) => n / d);
-    const deeper = val[0] > val[1] ? 0 : 1;
     this.choice = i;
-    this.correct = i === deeper;
-    this.state = 'digging';
+    this.correct = i === this.bigger;
+    this.state = 'showing';
     sfx.tap();
-    m.fx.tween(this.dug, { 0: 1, 1: 1 }, 1.1, { easing: ease.outQuad, done: () => this.reveal(deeper) });
+    this.m.fx.tween(this.fill, { v: 1 }, 0.9, { delay: 0.2, easing: ease.outQuad, done: () => this.reveal() });
   }
 
-  reveal(deeper) {
+  reveal() {
     const { m } = this;
     this.state = 'reveal';
-    const [dn, dd] = this.fracs[deeper];
-    const [sn, sd] = this.fracs[1 - deeper];
+    const big = this.bigger;
+    const [bn, bd] = this.fracs[big];
+    const [sn, sd] = this.fracs[1 - big];
     const why =
       this.kind === 'sameNum'
-        ? `${PIECE_NAMES[dd][0].toUpperCase()}${PIECE_NAMES[dd].slice(1)} are bigger pieces than ${PIECE_NAMES[sd]}!`
-        : `Same size pieces, and ${dn} pieces is more than ${sn}.`;
+        ? `${PIECE_NAMES[bd][0].toUpperCase()}${PIECE_NAMES[bd].slice(1)} are bigger pieces than ${PIECE_NAMES[sd]}!`
+        : `Same size pieces, and ${bn} pieces is more than ${sn}.`;
     if (this.correct) {
       sfx.ding();
-      m.fx.burst(SHAFT_X[deeper] + SHAFT.w / 2, SHAFT.top + 60, [UI.good, '#ffffff', UI.accent], { n: 20 });
-      m.say(`Yes! ${dn}/${dd} goes deeper. ${why}`, 99);
+      m.fx.burst(CARD_X[big] + CARD.w / 2, CARD.y + CARD.h / 2, [UI.good, '#ffffff', UI.accent], { n: 20 });
+      m.say(`Yes! ${bn}/${bd} is bigger. ${why}`, 99);
     } else {
       sfx.oops();
       m.reportMiss();
-      m.say(`Look: ${dn}/${dd} goes deeper. ${why}`, 99);
+      m.say(`${bn}/${bd} is bigger. ${why}`, 99);
     }
   }
 
   finish() {
     this.state = 'done';
     this.m.say(null);
-    const deeper = this.fracs[0][0] / this.fracs[0][1] > this.fracs[1][0] / this.fracs[1][1] ? 0 : 1;
+    const big = this.bigger;
     this.m.stepDone({
       skill: 'compare', correct: this.correct, firstTry: this.correct, precise: false, fixed: false,
-      at: { x: SHAFT_X[deeper] + SHAFT.w / 2, y: SHAFT.top },
+      at: { x: CARD_X[big] + CARD.w / 2, y: CARD.y },
     });
   }
 }

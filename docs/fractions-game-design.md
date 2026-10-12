@@ -61,7 +61,7 @@ stretch into grade 4 (and some grade 5).
 | **Place** | Drag a support / torch / window along a bridge, wall or shaft to a fraction position. Ruler ticks fade as mastery grows. | Number line (core) |
 | **Cut** | Tap saw marks to split a plank into equal parts; unequal cuts wobble and crumble. Then grab 3 of the 4 pieces. | Partitioning, unit → non-unit |
 | **Fill** | A gap needs 3/4 of a block; drag 1/2, 1/4, 1/8 slabs from a tray to fill it exactly. Many right answers. | Equivalence, addition |
-| **Compare** | Two tunnels: which goes deeper, 3/8 or 3/5? Tap one; both then appear on a shared line. | Comparison, bias-busting |
+| **Compare** | "Which fraction is bigger?" Two fraction cards, numbers only (no picture to eyeball). After he answers, both appear as bars of the same whole over a 0–1 ruler, with Pip's reason. (Tunnels were dropped: "deeper" was ambiguous and the empty shafts implied a visual comparison.) | Comparison, bias-busting |
 | **Name it** | A piece is already placed; pick (or build) the fraction that names it. | Reverse direction |
 | **Dig** | Pip mines down a shaft to 5/4 depth (past the first "1" marker). | Fractions > 1 (biome 3+) |
 | **Trade** | Villager prices in emeralds / shards / specks (1 = 10 = 100). | Decimals (biome 9) |
