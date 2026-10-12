@@ -247,7 +247,7 @@ function sprites() {
   ctx.fillRect(0, 0, W, H);
 
   // The three Pip outfits, each standing on grass at game scale (3×) and close up (6×).
-  const outfits = [['pip', 'A  BUILDER'], ['pip_explorer', 'B  EXPLORER'], ['pip_miner', 'C  MINER']];
+  const outfits = [['pip', 'PIP  MINER'], ['pip_builder', 'BUILDER'], ['pip_explorer', 'EXPLORER']];
   outfits.forEach(([name, label], i) => {
     const x0 = 30 + i * 200;
     drawSprite(ctx, name, x0, 20, 6);

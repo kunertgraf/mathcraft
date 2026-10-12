@@ -46,6 +46,49 @@ stretch into grade 4 (and some grade 5).
 3. **Build** (bounded): spend materials in his free-build plot. Optional block designer to paint his own textures.
 4. **Save your build** ritual ends the session.
 
+## Gameplay
+
+### Session flow (~15–20 min)
+1. **Camp** (home screen): Pip at the mine entrance, his world behind, and a board with 2–3 **blueprint cards** to choose from (e.g. Rope Bridge, Watchtower, Minecart Track).
+2. **Blueprint mission** (~8–12 min): 8–10 **build steps**. Each step is one maths problem whose answer builds part of the structure — the bridge literally grows as he answers.
+3. **Structure complete**: it's placed in his world, plus a new block/outfit unlock.
+4. **Free build** (parent-set limit, default 10 min): spend earned materials in his world.
+5. **"Save your build"** ritual ends the session.
+
+### Step types (iPad: drag and tap only)
+| Step | What he does | Skill |
+|---|---|---|
+| **Place** | Drag a support / torch / window along a bridge, wall or shaft to a fraction position. Ruler ticks fade as mastery grows. | Number line (core) |
+| **Cut** | Tap saw marks to split a plank into equal parts; unequal cuts wobble and crumble. Then grab 3 of the 4 pieces. | Partitioning, unit → non-unit |
+| **Fill** | A gap needs 3/4 of a block; drag 1/2, 1/4, 1/8 slabs from a tray to fill it exactly. Many right answers. | Equivalence, addition |
+| **Compare** | Two tunnels: which goes deeper, 3/8 or 3/5? Tap one; both then appear on a shared line. | Comparison, bias-busting |
+| **Name it** | A piece is already placed; pick (or build) the fraction that names it. | Reverse direction |
+| **Dig** | Pip mines down a shaft to 5/4 depth (past the first "1" marker). | Fractions > 1 (biome 3+) |
+| **Trade** | Villager prices in emeralds / shards / specks (1 = 10 = 100). | Decimals (biome 9) |
+
+### Feedback
+- **Correct**: piece snaps in with a thunk + particles; a material drops immediately (gem, ore, block).
+- **Close enough counts**: placement within a tolerance (≈ 1/24 of the span at first, tightening with mastery); a **precision bonus** star for very close.
+- **Wrong**: the piece goes where he put it and the structure shows the consequence (bridge sags at that spot), then the ruler zooms in showing his spot vs. the target with labels ("You built at about 1/2. 2/3 is here."). Retry immediately.
+- **Rapid misses** (2–3 fast wrong): Pip says "Measure twice!" and shows one hint step.
+
+### Rewards cadence
+- Every correct step → a material (immediate).
+- Every 3–5 steps → something new: a block type, outfit (Builder, Explorer…), or decoration.
+- Effort stars for using the hint/check well, fixing a mistake, precision.
+- Blueprint complete → the structure joins his world (the main, durable reward).
+
+### Learning engine
+- Per-skill mastery estimate (recent accuracy + speed + hint use). Steps are generated, not hand-written: the generator picks step type, denominator and scaffold level from the current skill.
+- New biome unlocks on mastery; earlier skills are interleaved back in once basic fluency is reached.
+- Biome intros are interactive: Pip demonstrates with steps he taps through ("Tap to cut this plank into 3 equal pieces").
+
+### Optional speed mode: Minecart Rush
+On mastered skills only: a minecart rolls along a track and he taps to switch rails at fraction positions. Beat-your-own-best time; no leaderboards, no penalty for slowness.
+
+### First playable slice (proposed)
+Camp with one blueprint (**Rope Bridge**), step types Place + Cut + Fill + Compare, biomes 1–2 content (denominators 2, 3, 4, 6, 8 on a 0–1 line), material rewards, mastery tracking in `shared/store.js`. Free build and other step types follow.
+
 ## Progression (biomes)
 | # | Biome (working name) | Skill | Grade |
 |---|---|---|---|

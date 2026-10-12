@@ -46,15 +46,15 @@ const PERSON_ROWS = [
 const SKIN = { S: UI.skin, s: UI.skinShade, M: '#a8614a', W: '#f4f2ee', E: '#2b3a8a' };
 
 const OUTFITS = {
-  // A: builder — yellow hard hat, red shirt, blue overalls.
-  pip: {
+  // Unlockable: builder — yellow hard hat, red shirt, blue overalls.
+  pip_builder: {
     H: UI.hat, h: UI.hatShade, w: '#fff3c4', y: '#b88416',
     R: RAMPS.dirt[1],
     T: RAMPS.brick[2], t: RAMPS.brick[1],
     O: UI.shirt, o: UI.shirtShade, b: RAMPS.gold[1], l: '#22306e',
     B: RAMPS.wood[1], k: RAMPS.bark[0],
   },
-  // B: explorer — no hat, auburn hair, green shirt, brown work overalls.
+  // Unlockable: explorer — no hat, auburn hair, green shirt, brown work overalls.
   pip_explorer: {
     H: '#8a4a26', h: '#6a3519', w: '#a8613a', y: '#6a3519',
     R: '#6a3519',
@@ -62,8 +62,8 @@ const OUTFITS = {
     O: RAMPS.wood[2], o: RAMPS.wood[1], b: RAMPS.gold[1], l: RAMPS.wood[0],
     B: RAMPS.bark[1], k: RAMPS.bark[0],
   },
-  // C: miner — grey helmet with a lamp, orange shirt, charcoal overalls.
-  pip_miner: {
+  // Default Pip: miner — grey helmet with a lamp, orange shirt, charcoal overalls.
+  pip: {
     H: RAMPS.stone[3], h: RAMPS.stone[2], w: RAMPS.gold[2], y: RAMPS.stone[1],
     R: RAMPS.dirt[0],
     T: '#e0782f', t: '#b45a1e',
