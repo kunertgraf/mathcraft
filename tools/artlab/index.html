@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Art Lab</title>
+  <style>
+    body { margin: 0; padding: 24px; background: #1b1c33; color: #e9e9f5; font-family: ui-rounded, system-ui, sans-serif; }
+    h1 { margin: 0 0 4px; }
+    h2 { margin: 36px 0 10px; font-size: 1.1rem; color: #c9cbf2; }
+    p { margin: 0 0 12px; color: #a9abd0; max-width: 70ch; }
+    canvas { display: block; max-width: 100%; image-rendering: pixelated; border-radius: 10px; }
+    .swatches { display: flex; flex-wrap: wrap; gap: 14px; }
+    .ramp { display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; color: #a9abd0; }
+    .ramp div { display: flex; }
+    .ramp span { width: 26px; height: 26px; }
+  </style>
+</head>
+<body>
+  <h1>Art Lab</h1>
+  <p>Every asset at game scale. Textures are generated from <code>shared/art/</code>; maths geometry is drawn at exact positions.</p>
+
+  <h2>Sample scene: Build the Bridge</h2>
+  <canvas id="scene"></canvas>
+
+  <h2>Blocks</h2>
+  <canvas id="blocks"></canvas>
+
+  <h2>Tiling check</h2>
+  <canvas id="tiling"></canvas>
+
+  <h2>Fraction pieces (exact cuts)</h2>
+  <canvas id="fractions"></canvas>
+
+  <h2>Decimals: block → tenths → hundredths</h2>
+  <canvas id="decimals"></canvas>
+
+  <h2>Sprites & type</h2>
+  <canvas id="sprites"></canvas>
+
+  <h2>Palette</h2>
+  <div id="palette" class="swatches"></div>
+
+  <script type="module" src="artlab.js"></script>
+</body>
+</html>
