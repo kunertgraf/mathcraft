@@ -89,6 +89,22 @@ On mastered skills only: a minecart rolls along a track and he taps to switch ra
 ### First playable slice (proposed)
 Camp with one blueprint (**Rope Bridge**), step types Place + Cut + Fill + Compare, biomes 1–2 content (denominators 2, 3, 4, 6, 8 on a 0–1 line), material rewards, mastery tracking in `shared/store.js`. Free build and other step types follow.
 
+## Base defence: Day → Build → Night (every session)
+- **Day**: a blueprint mission. Each correct step grants 3 blocks of a random available type (basic blocks + unlocked ones).
+- **Build** (`build.js`): an 8×5 grid in front of Pip's house. Minecraft-style hotbar (strongest first, strength pips).
+  Blocks go on the ground or next to another block; tap a top block to take it back. Timer (default 10 min,
+  `buildMinutes` setting), "2 minutes until sunset" warning, or "Start night" any time. First visit gives a starter pack.
+- **Block strength** (hits): dirt/sand/glass 2, planks 3, log/gold/emerald 4, stone 5, brick 6, cobble 7, diamond 10.
+- **Night** (`night.js`, ~2–3 min, 8 calls): mobs are hidden in the dark. Pip calls "Zombie at 3/4!" and he drags along
+  the field's number line (spawn = 0, base = 1) and releases to drop an anvil. Uses the *place* skill one notch easier
+  than missions; results feed mastery.
+  - Hit → mob squashed, +1 gem. Miss → anvil lands where he aimed, the mob is revealed where it really was
+    ("You dropped it at about 2/4. The zombie was at 1/4!") and marches on the walls.
+  - **Zombies** bash the first block in their path; **Fizzlers** (our own exploding mob: a blocky lime slime with a fuse)
+    stop at a wall, flash, and pop, damaging blocks within ~1.5 cells. Pip's bow covers the near 40% of the field.
+  - Sunrise: everything is repaired, +3 gems if the house held; nothing earned is ever lost.
+- **Next**: skeletons (shoot over low walls → wall height), torches/moats, reverse "where is it?" calls, slabs in building.
+
 ## Progression (biomes)
 | # | Biome (working name) | Skill | Grade |
 |---|---|---|---|

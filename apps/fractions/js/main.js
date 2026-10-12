@@ -3,11 +3,13 @@ import { FX } from './fx.js';
 import { unlockAudio } from './audio.js';
 import { Camp } from './camp.js';
 import { Mission } from './mission.js';
+import { Build } from './build.js';
+import { Night } from './night.js';
 
 const canvas = document.getElementById('game');
 const stage = createStage(canvas);
 
-const SCENES = { camp: Camp, mission: Mission };
+const SCENES = { camp: Camp, mission: Mission, build: Build, night: Night };
 
 const game = {
   stage,

@@ -1,6 +1,6 @@
 // A Rope Bridge mission: 8 build steps; each correct answer grows the bridge.
 import { UI, RAMPS } from '../../../shared/art/palette.js';
-import { drawSprite, fillArea, drawText } from '../../../shared/art/render.js';
+import { drawSprite, fillArea, drawText, drawPiece } from '../../../shared/art/render.js';
 import { drawSky, drawTerrain, drawBridge, drawPip, GROUND, DECK_SEGMENTS } from './world.js';
 import { instruction, bubble, hudGems, rewardBanner, button, panel, hit, FONT } from './ui.js';
 import { STEPS } from './steps.js';
@@ -20,11 +20,12 @@ export class Mission {
     this.idx = 0;
     this.bridge = { deck: 0, drops: {}, supports: [], sag: null };
     this.pip = { x: 96, y: GROUND, jump: 0, outfit: store.forApp('fractions').get('outfit', 'pip') };
-    this.earned = { gems: 0, stars: 0, unlocks: [] };
+    this.earned = { gems: 0, stars: 0, unlocks: [], blocks: {} };
     this.correctCount = 0;
     this.speech = null;
     this.banners = []; // queued reward messages shown in the instruction slot
     this.flyingGems = [];
+    this.flyingBlocks = [];
     this.rapid = 0;
     this.summary = null;
     this.startStep();
@@ -71,7 +72,9 @@ export class Mission {
     if (r.correct) {
       // Immediate, concrete reward: a gem flies to the counter, a material drops.
       inventory.addGem();
-      inventory.addMaterial();
+      const got = inventory.grantBlocks(3);
+      this.earned.blocks[got.name] = (this.earned.blocks[got.name] ?? 0) + got.n;
+      this.flyBlock(got.name, at);
       this.earned.gems += 1;
       this.correctCount += 1;
       const gem = { x: at.x, y: at.y - 40 };
@@ -110,6 +113,21 @@ export class Mission {
     this.step = null;
     if (this.idx < this.steps.length) this.fx.after(wait, () => this.startStep());
     else this.fx.after(1.0, () => this.finish());
+  }
+
+  // A small block icon pops up from the answer and drifts down to the hotbar area.
+  flyBlock(name, at) {
+    const b = { name, x: at.x - 16, y: at.y - 60, a: 1 };
+    this.flyingBlocks.push(b);
+    this.fx.tween(b, { y: at.y - 110 }, 0.4, {
+      easing: ease.outQuad,
+      done: () =>
+        this.fx.tween(b, { x: 60, y: 700, a: 0.2 }, 0.6, {
+          delay: 0.2,
+          easing: ease.inQuad,
+          done: () => (this.flyingBlocks = this.flyingBlocks.filter((x) => x !== b)),
+        }),
+    });
   }
 
   growDeck(stepsDone) {
@@ -172,6 +190,12 @@ export class Mission {
     }
     this.fx.draw(ctx);
     for (const g of this.flyingGems) drawSprite(ctx, 'gem', g.x, g.y, 4);
+    for (const b of this.flyingBlocks) {
+      ctx.globalAlpha = b.a;
+      drawPiece(ctx, b.name, b.x, b.y, 32);
+      drawText(ctx, '+3', b.x + 38, b.y + 8, { scale: 2 });
+      ctx.globalAlpha = 1;
+    }
 
     if (this.speech) bubble(ctx, this.speech.text, this.pip.x + 24, this.pip.y - 104, { maxW: 220 });
 
@@ -204,11 +228,21 @@ export class Mission {
     ctx.fillStyle = '#14152b';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const lines = [`Gems earned: ${this.earned.gems}`, `Effort stars: ${this.earned.stars}`];
+    const lines = [`Gems: ${this.earned.gems}   Effort stars: ${this.earned.stars}`];
     if (this.earned.unlocks.length) lines.push(`Unlocked: ${this.earned.unlocks.map((u) => u.name).join(', ')}`);
-    lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 110 + i * 40));
+    lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 84 + i * 36));
     ctx.textAlign = 'left';
-    this.campBtn = { x: W / 2 - 130, y: y + h - 86, w: 260, h: 64, label: 'Back to camp' };
+    // Blocks earned, as icons with counts.
+    const got = Object.entries(this.earned.blocks);
+    const PER_ROW = 5, SP = 88;
+    got.forEach(([name, n], i) => {
+      const row = Math.floor(i / PER_ROW), inRow = Math.min(PER_ROW, got.length - row * PER_ROW);
+      const bx = W / 2 - (inRow * SP) / 2 + (i % PER_ROW) * SP;
+      const by = y + 132 + row * 48;
+      drawPiece(ctx, name, bx + 8, by, 36);
+      drawText(ctx, `+${n}`, bx + 50, by + 10, { scale: 2, colour: '#b4541e', shadow: null });
+    });
+    this.campBtn = { x: W / 2 - 150, y: y + h - 86, w: 300, h: 64, label: 'Build your base!' };
     button(ctx, this.campBtn);
   }
 
@@ -216,7 +250,7 @@ export class Mission {
     if (this.summary) {
       if (hit(this.campBtn, p)) {
         sfx.tap();
-        this.game.go('camp');
+        this.game.go('build');
       }
       return;
     }

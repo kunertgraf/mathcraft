@@ -72,7 +72,59 @@ const OUTFITS = {
   },
 };
 
+// Mobs. The zombie reuses the person layout with its own palette (deliberately
+// not Minecraft's teal-shirt zombie).
+const ZOMBIE = {
+  H: '#3b4a2e', h: '#2f3b25', w: '#4a5c39', y: '#2f3b25', R: '#2f3b25',
+  S: '#76a05f', s: '#5a8048', M: '#2d3b26', W: '#1e2a18', E: '#c8f06a',
+  T: '#7a5a3a', t: '#5e4429',
+  O: '#3d3f5c', o: '#2b2c44', b: '#3d3f5c', l: '#2b2c44',
+  B: '#2b2c44', k: '#1b1b2a',
+};
+
 export const SPRITES = {
+  zombie: { colours: ZOMBIE, rows: PERSON_ROWS, texture: true },
+  // The Fizzler: our own exploding mob. A blocky lime slime with orange
+  // spots and a fizzing fuse; it hisses and pops when it reaches a wall. 16×16.
+  fizzler: {
+    texture: true,
+    colours: {
+      G: '#7bc94a', g: '#5a9e36', d: '#3e7426', o: '#e0782f',
+      W: '#ffffff', E: '#14152b', M: '#2a4a1c', F: '#8a5d33', s: '#ffd34e', S: '#fff3c4',
+    },
+    rows: [
+      '.......sS.......',
+      '......sFs.......',
+      '.......F........',
+      '....gggGGggg....',
+      '...gGGGGGGGGg...',
+      '..gGGoGGGGGGGg..',
+      '..gGGGGGGGoGGg..',
+      '..gGWWGGGGWWGg..',
+      '..gGWEGGGGWEGg..',
+      '..gGGGGGGGGGGg..',
+      '..gGGGMMMMGGGg..',
+      '..gGGGGMMGGGGg..',
+      '..dgGGGGGGGGgd..',
+      '...dggggggggd...',
+      '...dd..dd..dd...',
+      '................',
+    ],
+  },
+  // Anvil dropped by the dispenser. 12×8.
+  anvil: {
+    colours: { a: RAMPS.stone[1], b: RAMPS.stone[2], c: RAMPS.stone[4] },
+    rows: [
+      '.cccccccccc.',
+      'cbbbbbbbbbbb',
+      '.aaabbbbaaa.',
+      '....bbbb....',
+      '....abba....',
+      '...bbbbbb...',
+      '..bbbbbbbb..',
+      '..aaaaaaaa..',
+    ],
+  },
   ...Object.fromEntries(
     Object.entries(OUTFITS).map(([name, outfit]) => [
       name,

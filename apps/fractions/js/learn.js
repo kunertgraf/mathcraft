@@ -116,20 +116,54 @@ export const UNLOCKS = [
   { id: 'diamond_ore', kind: 'block', name: 'Diamond ore' },
 ];
 
-const MATERIALS = ['planks', 'stone', 'log', 'dirt', 'sand'];
+// Block strength (hits to break) for base defence.
+export const BLOCK_HP = {
+  dirt: 2, sand: 2, glass: 2, planks: 3, log: 4, gold_ore: 4, emerald_ore: 4,
+  stone: 5, brick: 6, cobble: 7, diamond_ore: 10,
+};
+const BASIC_BLOCKS = ['dirt', 'planks', 'stone', 'log', 'sand'];
+const STARTER = { dirt: 12, planks: 6 };
 
 export const inventory = {
   gems: () => save.get('gems', 0),
-  addGem() {
-    save.set('gems', inventory.gems() + 1);
+  addGem(n = 1) {
+    save.set('gems', inventory.gems() + n);
   },
-  materials: () => save.get('materials', {}),
-  addMaterial() {
-    const name = rnd(MATERIALS);
-    const m = inventory.materials();
-    m[name] = (m[name] ?? 0) + 1;
-    save.set('materials', m);
-    return name;
+  // Blocks the player owns (not yet placed in the base).
+  blocks: () => save.get('blocks', {}),
+  blockTypes: () => [
+    ...BASIC_BLOCKS,
+    ...UNLOCKS.filter((u) => u.kind === 'block' && inventory.unlocked().includes(u.id)).map((u) => u.id),
+  ],
+  addBlocks(name, n) {
+    const b = inventory.blocks();
+    b[name] = (b[name] ?? 0) + n;
+    save.set('blocks', b);
+  },
+  // Reward for a correct mission step: a few blocks of a random available type.
+  grantBlocks(n = 3) {
+    const name = rnd(inventory.blockTypes());
+    inventory.addBlocks(name, n);
+    return { name, n };
+  },
+  takeBlock(name) {
+    const b = inventory.blocks();
+    if (!b[name]) return false;
+    b[name] -= 1;
+    save.set('blocks', b);
+    return true;
+  },
+  ensureStarter() {
+    if (save.get('starterGiven', false)) return;
+    for (const [name, n] of Object.entries(STARTER)) inventory.addBlocks(name, n);
+    save.set('starterGiven', true);
+  },
+  // The base layout: { "col,row": blockName }.
+  base: () => save.get('base', {}),
+  setBase: (layout) => save.set('base', layout),
+  nights: () => save.get('nights', 0),
+  addNight() {
+    save.set('nights', inventory.nights() + 1);
   },
   unlocked: () => save.get('unlocked', []),
   unlockNext() {

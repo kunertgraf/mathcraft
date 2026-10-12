@@ -1,12 +1,25 @@
 {
   "title": "Pip's Mine",
-  "icon": "⛏️",
+  "icon": "\u26cf\ufe0f",
   "color": "#e0782f",
   "entry": "index.html",
   "files": [
-    "js/main.js", "js/stage.js", "js/fx.js", "js/audio.js", "js/learn.js",
-    "js/world.js", "js/ui.js", "js/camp.js", "js/mission.js", "js/steps.js",
-    "../../shared/art/palette.js", "../../shared/art/textures.js",
-    "../../shared/art/sprites.js", "../../shared/art/render.js"
+    "js/main.js",
+    "js/stage.js",
+    "js/fx.js",
+    "js/audio.js",
+    "js/learn.js",
+    "js/world.js",
+    "js/ui.js",
+    "js/camp.js",
+    "js/mission.js",
+    "js/steps.js",
+    "js/night.js",
+    "js/build.js",
+    "js/base.js",
+    "../../shared/art/palette.js",
+    "../../shared/art/textures.js",
+    "../../shared/art/sprites.js",
+    "../../shared/art/render.js"
   ]
 }

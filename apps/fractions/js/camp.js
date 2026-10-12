@@ -60,6 +60,8 @@ export class Camp {
     for (const c of this.cards) this.drawCard(ctx, c);
 
     hudGems(ctx, inventory.gems(), W - 150, 18);
+    const nights = inventory.nights();
+    if (nights) drawText(ctx, `NIGHTS DEFENDED: ${nights}`, W - 24, 66, { scale: 2, align: 'right' });
     this.drawUnlocks(ctx);
     if (this.speech) bubble(ctx, this.speech, this.pip.x + 24, this.pip.y - 104, { maxW: 260 });
     this.fx.draw(ctx);
