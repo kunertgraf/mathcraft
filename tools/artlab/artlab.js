@@ -128,7 +128,10 @@ function scene() {
   }
 
   // Pip on the left cliff, looking at the bridge.
-  drawSprite(ctx, 'pip', 3.8 * B, GROUND - 16 * 4, 4);
+  // Pip is 2 blocks tall (16×32 at 3×), with a soft contact shadow.
+  ctx.fillStyle = 'rgb(0 0 0 / 0.25)';
+  ctx.fillRect(3.8 * B + P * 3, GROUND - P, P * 10, P);
+  drawSprite(ctx, 'pip', 3.8 * B, GROUND - 32 * P, P);
 
   // Instruction panel (system font for reading; pixel font for numbers).
   const panel = { x: 3.2 * B, y: 0.35 * B, w: 9.6 * B, h: 1.25 * B };
@@ -236,18 +239,28 @@ function decimals() {
 
 // ---------- Sprites & type ----------
 function sprites() {
-  const W = 820, H = 220;
+  const W = 900, H = 420, B = 48, P = 3;
   const canvas = $('sprites');
   const ctx = setupCanvas(canvas, W, H);
   sizeCss(canvas, W);
   ctx.fillStyle = RAMPS.sky[1];
   ctx.fillRect(0, 0, W, H);
-  drawSprite(ctx, 'pip', 30, 30, 8);
-  drawSprite(ctx, 'gem', 160, 60, 8);
-  drawSprite(ctx, 'star', 250, 50, 8);
-  drawText(ctx, 'BUILD THE BRIDGE!', 360, 40, { scale: 4 });
-  drawText(ctx, '0 1 2 3 4 5 6 7 8 9', 360, 100, { scale: 3, colour: UI.accent });
-  drawText(ctx, '3/4 > 2/3  0.5 = 1/2', 360, 140, { scale: 3 });
+
+  // The three Pip outfits, each standing on grass at game scale (3×) and close up (6×).
+  const outfits = [['pip', 'A  BUILDER'], ['pip_explorer', 'B  EXPLORER'], ['pip_miner', 'C  MINER']];
+  outfits.forEach(([name, label], i) => {
+    const x0 = 30 + i * 200;
+    drawSprite(ctx, name, x0, 20, 6);
+    drawSprite(ctx, name, x0 + 120, 20 + 192 - 96, P);
+    for (let c = 0; c < 4; c++) drawBlock(ctx, 'grass', x0 + c * B - 12, 212, B);
+    drawText(ctx, label, x0 + 84, 280, { scale: 2, align: 'center' });
+  });
+
+  drawSprite(ctx, 'gem', 640, 40, 8);
+  drawSprite(ctx, 'star', 740, 34, 8);
+  drawText(ctx, 'BUILD THE BRIDGE!', 30, 320, { scale: 4 });
+  drawText(ctx, '0 1 2 3 4 5 6 7 8 9', 30, 370, { scale: 3, colour: UI.accent });
+  drawText(ctx, '3/4 > 2/3  0.5 = 1/2', 450, 370, { scale: 3 });
 }
 
 // ---------- Palette ----------
