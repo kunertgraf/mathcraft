@@ -44,16 +44,9 @@ export function liveFrom(layout) {
 }
 
 // blocks: { "c,r": name } or live { "c,r": { name, hp, max } }
-export function drawBase(ctx, blocks, { grid = false } = {}) {
-  if (grid) {
-    ctx.save();
-    ctx.strokeStyle = 'rgb(255 255 255 / 0.22)';
-    ctx.setLineDash([4, 6]);
-    ctx.lineWidth = 1;
-    for (let c = GRID.c0; c <= GRID.c1; c++)
-      for (let r = GRID.r0; r <= GRID.r1; r++) ctx.strokeRect(cellX(c) + 2, cellY(r) + 2, B - 4, B - 4);
-    ctx.restore();
-  }
+// grid: show the build zone; t (seconds) animates the "you can build here" markers.
+export function drawBase(ctx, blocks, { grid = false, t = 0 } = {}) {
+  if (grid) drawBuildZone(ctx, blocks, t);
   for (const [k, v] of Object.entries(blocks)) {
     const [c, r] = k.split(',').map(Number);
     const name = typeof v === 'string' ? v : v.name;
@@ -61,6 +54,41 @@ export function drawBase(ctx, blocks, { grid = false } = {}) {
     if (typeof v !== 'string' && v.hp < v.max) drawCracks(ctx, cellX(c), cellY(r), 1 - v.hp / v.max);
   }
   drawHouse(ctx);
+}
+
+function drawBuildZone(ctx, layout, t) {
+  const x = cellX(GRID.c0), y = cellY(GRID.r0);
+  const w = (GRID.c1 - GRID.c0 + 1) * B, h = (GRID.r1 - GRID.r0 + 1) * B;
+  // Tinted zone with a solid border.
+  ctx.fillStyle = 'rgb(255 255 255 / 0.14)';
+  ctx.fillRect(x, y, w, h);
+  // Cell lines: dark then light, so they read on bright sky and dark hills alike.
+  for (const [colour, off] of [['rgb(20 21 43 / 0.35)', 1], ['rgb(255 255 255 / 0.6)', 0]]) {
+    ctx.fillStyle = colour;
+    for (let c = GRID.c0 + 1; c <= GRID.c1; c++) ctx.fillRect(cellX(c) - 1 + off, y, 2, h);
+    for (let r = GRID.r0 + 1; r <= GRID.r1; r++) ctx.fillRect(x, cellY(r) - 1 + off, w, 2);
+  }
+  ctx.strokeStyle = 'rgb(20 21 43 / 0.6)';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(x, y, w, h);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, w, h);
+
+  // Pulsing yellow corner brackets on every cell he can build in right now.
+  const pulse = 0.55 + 0.45 * Math.sin(t * 4);
+  ctx.fillStyle = `rgb(255 207 63 / ${pulse})`;
+  const L = 12, T = 4, inset = 5;
+  for (let c = GRID.c0; c <= GRID.c1; c++) {
+    for (let r = GRID.r0; r <= GRID.r1; r++) {
+      if (!canPlace(layout, c, r)) continue;
+      const cx = cellX(c) + inset, cy = cellY(r) + inset, s = B - inset * 2;
+      for (const [bx, by, dx, dy] of [[cx, cy, 1, 1], [cx + s, cy, -1, 1], [cx, cy + s, 1, -1], [cx + s, cy + s, -1, -1]]) {
+        ctx.fillRect(dx > 0 ? bx : bx - L, dy > 0 ? by : by - T, L, T);
+        ctx.fillRect(dx > 0 ? bx : bx - T, dy > 0 ? by : by - L, T, L);
+      }
+    }
+  }
 }
 
 function drawCracks(ctx, x, y, dmg) {

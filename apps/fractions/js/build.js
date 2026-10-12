@@ -80,7 +80,7 @@ export class Build {
     const view = this.game.stage.view;
     drawSky(ctx, view, this.t);
     drawTerrain(ctx, view, { ravine: false });
-    drawBase(ctx, this.layout, { grid: true });
+    drawBase(ctx, this.layout, { grid: !this.ending, t: this.t });
     // Field edge marker (where mobs come from).
     ctx.fillStyle = 'rgb(40 20 20 / 0.25)';
     ctx.fillRect(FIELD.x0 - 48, GROUND - 6, 48, 6);
