@@ -63,7 +63,6 @@ html, body { background: var(--bg); color: var(--ink); }
 .scroll {
   flex: 1;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   padding: 8px 24px 24px;
 }
 
@@ -122,6 +121,8 @@ html, body { background: var(--bg); color: var(--ink); }
   box-shadow: var(--shadow);
   border-top: 14px solid var(--c, #ccc);
   text-align: center;
+  /* Own compositing layer: iPad Safari sometimes skipped painting this card inside the scroller. */
+  will-change: transform;
 }
 .recipe-hero { font-size: 4.5rem; line-height: 1.1; }
 .recipe-hero span:nth-child(2) { font-size: 1.3em; }
