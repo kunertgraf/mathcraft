@@ -8,6 +8,9 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
 - Static hosting (GitHub Pages target). **All paths must be relative** so it works under a subpath.
 - Service worker (`sw.js`): network-first with a 3s timeout and cache fallback, so updates arrive on the next
   launch when online, and everything works offline.
+  It fetches with `cache: 'no-cache'` because GitHub Pages sends `max-age=600` (otherwise updates lag ~10 min).
+- iOS resumes home-screen apps rather than reloading them, so `hub.js` reloads itself when it comes back after
+  30+ s away (only while no app is open), or when leaving an app after the hub has been up 30+ min.
 
 ## Layout
 - `index.html`, `hub.js`, `hub.css`: the launcher. Apps open in a full-screen iframe and the hub owns the home button.

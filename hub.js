@@ -2,6 +2,10 @@ import { store } from './shared/store.js';
 
 const $ = (id) => document.getElementById(id);
 const HOLD_MS = 3000;
+// iOS resumes home-screen apps instead of reloading them, so check for updates ourselves.
+const AWAY_MS = 30 * 1000; // reload when coming back after this long (if no app is open)
+const STALE_MS = 30 * 60 * 1000; // or when leaving an app after the hub has been up this long
+const loadedAt = Date.now();
 
 let apps = [];
 
@@ -65,6 +69,8 @@ function openApp(app) {
 }
 
 function closeApp() {
+  // Been open a long time? Come home to a fresh page so updates show up.
+  if (Date.now() - loadedAt > STALE_MS) return location.reload();
   $('player').hidden = true;
   $('app-frame').src = 'about:blank'; // stop any audio/timers in the app
   renderHub();
@@ -150,6 +156,24 @@ async function setupOffline() {
   });
   (reg.active ?? navigator.serviceWorker.controller)?.postMessage({ type: 'precache', urls });
 }
+
+// ---------- Freshness on resume ----------
+let hiddenAt = 0;
+function onResume() {
+  navigator.serviceWorker?.getRegistration().then((r) => r?.update()).catch(() => {});
+  const away = hiddenAt ? Date.now() - hiddenAt : 0;
+  hiddenAt = 0;
+  // Don't yank an app away mid-game; those refresh when he goes home (closeApp).
+  if ($('player').hidden && (away > AWAY_MS || Date.now() - loadedAt > STALE_MS)) location.reload();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+  else onResume();
+});
+// Restored from the back/forward cache (also how iOS can resume a standalone app).
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) onResume();
+});
 
 // ---------- Boot ----------
 apps = await loadRegistry();

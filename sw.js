@@ -1,6 +1,6 @@
 // Network-first service worker: always fresh when online (so pushed updates
 // show up on next launch), falls back to cache when offline.
-const CACHE = 'hub-v2';
+const CACHE = 'hub-v3';
 const NETWORK_TIMEOUT_MS = 3000;
 
 const SHELL = [
@@ -22,7 +22,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map(fresh))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -39,7 +39,7 @@ self.addEventListener('message', (e) => {
   if (e.data?.type !== 'precache') return;
   e.waitUntil(
     caches.open(CACHE).then((c) =>
-      Promise.all(e.data.urls.map((u) => c.add(u).catch(() => console.warn('precache failed', u)))),
+      Promise.all(e.data.urls.map((u) => c.add(fresh(u)).catch(() => console.warn('precache failed', u)))),
     ),
   );
 });
@@ -53,7 +53,9 @@ self.addEventListener('fetch', (e) => {
 async function networkFirst(request) {
   const cache = await caches.open(CACHE);
   try {
-    const response = await withTimeout(fetch(request), NETWORK_TIMEOUT_MS);
+    let response = await withTimeout(fetch(fresh(request.url)), NETWORK_TIMEOUT_MS);
+    // Safari refuses redirected responses for page loads; let the browser follow it itself.
+    if (response.redirected) response = await fetch(request);
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
@@ -61,6 +63,12 @@ async function networkFirst(request) {
     if (cached) return cached;
     throw new Error(`Offline and not cached: ${request.url}`);
   }
+}
+
+// GitHub Pages sends max-age=600, so a plain fetch can return a 10-minute-old copy from the
+// browser's HTTP cache. 'no-cache' always revalidates (a cheap 304 when nothing changed).
+function fresh(url) {
+  return new Request(new URL(url, self.location).href, { cache: 'no-cache', credentials: 'same-origin' });
 }
 
 function withTimeout(promise, ms) {
