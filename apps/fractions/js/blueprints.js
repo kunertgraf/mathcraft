@@ -395,9 +395,9 @@ class MinecartTrack extends Blueprint {
 }
 
 export const BLUEPRINTS = { bridge: Bridge, tower: Watchtower, track: MinecartTrack };
-// Unlock order: each blueprint needs one of the previous built first.
+// Card order in camp. `needs` can gate a blueprint behind another (null = open from the start).
 export const BLUEPRINT_ORDER = [
   { id: 'bridge', title: 'Rope Bridge', needs: null },
-  { id: 'tower', title: 'Watchtower', needs: 'bridge' },
-  { id: 'track', title: 'Minecart Track', needs: 'tower' },
+  { id: 'tower', title: 'Watchtower', needs: null },
+  { id: 'track', title: 'Minecart Track', needs: null },
 ];

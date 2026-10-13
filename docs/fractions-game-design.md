@@ -91,7 +91,7 @@ Camp with one blueprint (**Rope Bridge**), step types Place + Cut + Fill + Compa
 
 ## Blueprints (`js/blueprints.js`)
 Each blueprint defines its number line, what Place steps put on it, how the structure grows, and a finale.
-Unlocked in order (each needs one of the previous built):
+All open from the start (he picks any; `needs` in `BLUEPRINT_ORDER` can gate one if wanted). Suggested order:
 | Blueprint | Number line | Place step | Finale |
 |---|---|---|---|
 | **Rope Bridge** | horizontal 0 → 1 across a ravine | "Put a support at 2/3 of the bridge" | Pip walks across |
