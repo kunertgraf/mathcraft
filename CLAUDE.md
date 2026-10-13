@@ -35,6 +35,11 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
   step types in `steps.js` (Place, Cut, Fill, Compare), blueprints (bridge/tower/track) in `blueprints.js`,
   base building `build.js` + `base.js`, night defence `night.js`, mastery + step generation + rewards in `learn.js`.
   Fractions are integers over 24ths (`DEN_LCM`) for exact arithmetic.
+- `apps/recipes/` — **Cook Along**, step-by-step kid recipes. All content lives in `recipes.js` (plain data:
+  tools, ingredients with numeric `qty` + `cup`/`tsp` units, steps with optional `uses`, `grownup`, `timer`), so a
+  new recipe is just a new entry. The app draws measuring cups/spoons for each amount (1 ½ cups → 1 cup + ½ cup),
+  saves progress and running timers (resume within 12 h), and keeps the screen awake while cooking.
+  `?test` exposes `window.__cook`. Rewrite recipe steps in our own kid-friendly words; don't copy source text.
 - `apps/demo/` — minimal example of the app contract (not listed in `apps.json`).
 - Shared pixel-art kit: `shared/art/` (palette, procedural textures, sprites/font, render helpers).
   Preview everything at `tools/artlab/`.

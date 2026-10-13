@@ -1,0 +1,7 @@
+{
+  "title": "Cook Along",
+  "icon": "🧁",
+  "color": "#f2a63b",
+  "entry": "index.html",
+  "files": ["app.css", "app.js", "recipes.js"]
+}
