@@ -32,7 +32,8 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
 ## Apps
 - `apps/fractions/` — **Pip's Mine**, the fractions game (design: `docs/fractions-game-design.md`).
   Canvas game at a fixed 1024×768 logical resolution (`js/stage.js`), scenes `camp.js` / `mission.js`,
-  step types in `steps.js` (Place, Cut, Fill, Compare), mastery + step generation + rewards in `learn.js`.
+  step types in `steps.js` (Place, Cut, Fill, Compare), blueprints (bridge/tower/track) in `blueprints.js`,
+  base building `build.js` + `base.js`, night defence `night.js`, mastery + step generation + rewards in `learn.js`.
   Fractions are integers over 24ths (`DEN_LCM`) for exact arithmetic.
 - `apps/demo/` — minimal example of the app contract (not listed in `apps.json`).
 - Shared pixel-art kit: `shared/art/` (palette, procedural textures, sprites/font, render helpers).

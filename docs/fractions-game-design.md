@@ -89,6 +89,18 @@ On mastered skills only: a minecart rolls along a track and he taps to switch ra
 ### First playable slice (proposed)
 Camp with one blueprint (**Rope Bridge**), step types Place + Cut + Fill + Compare, biomes 1–2 content (denominators 2, 3, 4, 6, 8 on a 0–1 line), material rewards, mastery tracking in `shared/store.js`. Free build and other step types follow.
 
+## Blueprints (`js/blueprints.js`)
+Each blueprint defines its number line, what Place steps put on it, how the structure grows, and a finale.
+Unlocked in order (each needs one of the previous built):
+| Blueprint | Number line | Place step | Finale |
+|---|---|---|---|
+| **Rope Bridge** | horizontal 0 → 1 across a ravine | "Put a support at 2/3 of the bridge" | Pip walks across |
+| **Watchtower** | **vertical** 0 (ground) → 1 (top) | "Put a window 2/3 of the way up" | Pip hops up beside a flag |
+| **Minecart Track** | horizontal **0 → 2** (fractions > 1) | "Put a lamp at 5/4 on the track" | Pip rides a minecart |
+
+Wrong answers show a blueprint-specific consequence (bridge sags, tower wobbles, lamp topples). Each blueprint has
+its own first-time demo (the track's explains counting past 1: 5/4, 6/4, 7/4).
+
 ## Base defence: Day → Build → Night (every session)
 - **Day**: a blueprint mission. Each correct step grants 3 blocks of a random available type (basic blocks + unlocked ones).
 - **Build** (`build.js`): an 8×5 grid in front of Pip's house. Minecraft-style hotbar (strongest first, strength pips).

@@ -3,7 +3,7 @@
 // mission via m.stepDone({ skill, correct, firstTry, precise, fixed }).
 import { INK, UI, RAMPS } from '../../../shared/art/palette.js';
 import { fillArea, drawGhost, drawText, drawFraction } from '../../../shared/art/render.js';
-import { GROUND, WATER, X0, X1, SPAN, B, xAt, fAt } from './world.js';
+import { GROUND } from './world.js';
 import { button, hit, FONT } from './ui.js';
 import { sfx } from './audio.js';
 import { ease } from './fx.js';
@@ -34,42 +34,55 @@ function workbench(ctx, y, h) {
 }
 
 // ===================================================================
-// PLACE: drag a support along the bridge to a fraction position.
+// PLACE: drag along the blueprint's number line to a fraction position.
+// The line can be horizontal or vertical, 0–1 or 0–2 (m.bp.line).
 // ===================================================================
-const RULER_Y = GROUND - 92;
-
-function drawRuler(ctx, d, mode) {
-  const h = 16;
+function drawRuler(ctx, bp, d, mode) {
+  const { axis, max, cross } = bp.line;
+  const a = bp.pos(0), b = bp.pos(max);
+  const lo = Math.min(a, b), len = Math.abs(b - a), th = 16;
   ctx.fillStyle = UI.ruler;
-  ctx.fillRect(X0, RULER_Y, SPAN, h);
+  if (axis === 'x') ctx.fillRect(lo, cross, len, th);
+  else ctx.fillRect(cross, lo, th, len);
   ctx.strokeStyle = INK;
   ctx.lineWidth = 3;
-  ctx.strokeRect(X0, RULER_Y, SPAN, h);
-  for (let k = 0; k <= d; k++) {
-    const end = k === 0 || k === d;
-    if (mode === 'bare' && !end) continue;
-    const x = xAt(k / d);
+  if (axis === 'x') ctx.strokeRect(lo, cross, len, th);
+  else ctx.strokeRect(cross, lo, th, len);
+  for (let k = 0; k <= max * d; k++) {
+    const whole = k % d === 0;
+    if (mode === 'bare' && !whole) continue;
+    const at = bp.pos(k / d);
     ctx.fillStyle = UI.rulerInk;
-    ctx.fillRect(Math.round(x - 1.5), RULER_Y, 3, end ? h : h * 0.7);
-    if (end) drawText(ctx, k === 0 ? '0' : '1', x, RULER_Y - 30, { align: 'center' });
-    else if (mode === 'labels') drawFraction(ctx, k, d, x, RULER_Y - 48, { scale: 2 });
+    const tick = whole ? th : th * 0.7;
+    if (axis === 'x') ctx.fillRect(Math.round(at - 1.5), cross, 3, tick);
+    else ctx.fillRect(cross, Math.round(at - 1.5), tick, 3);
+    if (!whole && mode !== 'labels') continue;
+    // Labels sit above a horizontal ruler, right of a vertical one.
+    const left = bp.line.labelSide === 'left';
+    if (whole) {
+      const label = String(k / d);
+      if (axis === 'x') drawText(ctx, label, at, cross - 30, { align: 'center' });
+      else drawText(ctx, label, left ? cross - 12 : cross + th + 12, at - 10, { align: left ? 'right' : 'left' });
+    } else if (axis === 'x') drawFraction(ctx, k, d, at, cross - 48, { scale: 2 });
+    else drawFraction(ctx, k, d, left ? cross - 24 : cross + th + 26, at - 19, { scale: 2 });
   }
 }
 
-function drawPost(ctx, x, { ghost = false, colour = '#ffffff' } = {}) {
-  const w = 24, top = GROUND + 24, h = WATER + 12 - top;
-  if (ghost) drawGhost(ctx, x - w / 2, top, w, h, colour);
-  else fillArea(ctx, 'log', Math.round(x - w / 2), top, w, h, B);
-}
-
-function guideLine(ctx, x, colour = 'rgb(255 255 255 / 0.8)') {
+function guideLine(ctx, bp, at, colour = 'rgb(255 255 255 / 0.8)') {
+  const { axis, cross } = bp.line;
   ctx.save();
   ctx.strokeStyle = colour;
   ctx.setLineDash([4, 6]);
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(x, RULER_Y + 18);
-  ctx.lineTo(x, GROUND + 20);
+  if (axis === 'x') {
+    ctx.moveTo(at, cross + 18);
+    ctx.lineTo(at, bp.guideEnd());
+  } else {
+    const end = bp.guideEnd();
+    ctx.moveTo(end > cross ? cross + 18 : cross - 2, at);
+    ctx.lineTo(end, at);
+  }
   ctx.stroke();
   ctx.restore();
 }
@@ -78,34 +91,34 @@ export class PlaceStep {
   constructor(m, spec) {
     Object.assign(this, spec);
     this.m = m;
+    this.bp = m.bp;
     this.skill = 'place';
     this.target = spec.n / spec.d;
     this.attempts = 0;
     this.ghost = null;
     this.state = 'ready';
-    if (firstTime('place')) this.demo();
+    if (firstTime(`place-${this.bp.id}`)) this.demo();
   }
 
   get parts() {
-    return ['Put a support at ', { f: [this.n, this.d] }, ' of the bridge.'];
+    return this.bp.placeParts(this.n, this.d);
   }
 
   demo() {
-    const { m } = this;
+    const { m, bp } = this;
     this.state = 'demo';
-    this.demoPost = { x: X0 + 20 };
-    this.demoRuler = 2;
-    m.say('Halfway across the bridge is 1/2. Watch me!', 4);
-    m.fx.tween(this.demoPost, { x: xAt(0.5) }, 1.4, {
-      delay: 0.6,
+    this.demoAt = { v: bp.pos(0.08) };
+    m.say(bp.demo.text, 5);
+    m.fx.tween(this.demoAt, { v: bp.pos(bp.demo.f) }, 1.6, {
+      delay: 0.8,
       easing: ease.outQuad,
       done: () => {
         sfx.thunk();
-        m.fx.after(1.6, () => {
-          this.demoPost = null;
+        m.fx.after(2, () => {
+          this.demoAt = null;
           this.state = 'ready';
-          markSeen('place');
-          m.say('Your turn! Drag along the bridge, then let go to build.', 4);
+          markSeen(`place-${bp.id}`);
+          m.say(bp.demo.turn, 4);
         });
       },
     });
@@ -116,67 +129,66 @@ export class PlaceStep {
   }
 
   draw(ctx) {
-    drawRuler(ctx, this.demoPost ? 2 : this.d, this.demoPost ? 'labels' : this.scaffold);
-    if (this.demoPost) {
-      guideLine(ctx, this.demoPost.x);
-      drawPost(ctx, this.demoPost.x, { ghost: true, colour: UI.accent });
+    const { bp } = this;
+    drawRuler(ctx, bp, this.demoAt ? bp.demo.d ?? 2 : this.d, this.demoAt ? 'labels' : this.scaffold);
+    if (this.demoAt) {
+      guideLine(ctx, bp, this.demoAt.v);
+      bp.drawItem(ctx, this.demoAt.v, { ghost: true, colour: UI.accent });
     }
     if (this.ghost) {
-      guideLine(ctx, this.ghost.x);
-      drawPost(ctx, this.ghost.x, { ghost: true, colour: '#ffffff' });
+      guideLine(ctx, bp, this.ghost.at);
+      bp.drawItem(ctx, this.ghost.at, { ghost: true, colour: '#ffffff' });
     }
     if (this.state === 'wrong') {
-      const tx = xAt(this.target);
-      guideLine(ctx, tx, UI.accent);
-      drawPost(ctx, tx, { ghost: true, colour: UI.accent });
-      drawFraction(ctx, this.n, this.d, tx, GROUND + 40, { scale: 3, colour: UI.accent });
+      const ta = bp.pos(this.target);
+      guideLine(ctx, bp, ta, UI.accent);
+      bp.drawItem(ctx, ta, { ghost: true, colour: UI.accent });
+      const l = bp.labelAt(this.target);
+      drawFraction(ctx, this.n, this.d, l.x, l.y, { scale: 3, colour: UI.accent });
     }
   }
 
   down(p) {
-    if (this.state !== 'ready' || p.y < 170) return;
-    this.ghost = { x: clamp(p.x, X0, X1) };
+    if (this.state !== 'ready' || !this.bp.inZone(p)) return;
+    this.ghost = { at: this.bp.clampPos(p) };
     sfx.tap();
   }
 
   move(p) {
-    if (this.ghost) this.ghost.x = clamp(p.x, X0, X1);
+    if (this.ghost) this.ghost.at = this.bp.clampPos(p);
   }
 
   up() {
     if (!this.ghost) return;
-    const x = this.ghost.x;
+    const at = this.ghost.at;
     this.ghost = null;
-    this.commit(fAt(x));
+    this.commit(this.bp.fracAt(at));
   }
 
   commit(f) {
-    const { m } = this;
-    const err = Math.abs(f - this.target);
+    const { m, bp } = this;
+    const max = bp.line.max;
+    const err = Math.abs(f - this.target) / max; // tolerance is relative to the line's length
     const tol = this.scaffold === 'labels' ? 1 / 20 : 1 / 24;
     if (err <= tol) return this.succeed(f, err <= 1 / 80);
 
-    // Wrong: build where he put it, let the bridge sag there, and show the target.
+    // Wrong: build it where he put it, show the consequence, and show the target.
     this.attempts += 1;
     m.reportMiss();
     this.state = 'wrong';
-    const temp = { f, drop: 0 };
-    m.bridge.supports.push(temp);
-    m.bridge.sag = { f, amt: 0 };
-    m.fx.tween(m.bridge.sag, { amt: 16 }, 0.5, { easing: ease.outBounce });
+    const temp = bp.addTemp(f);
     sfx.crumble();
     const k = Math.round(f * this.d);
     let msg;
-    if (k / this.d === this.target) msg = `So close! A little to the ${f > this.target ? 'left' : 'right'}.`;
-    else if (k === 0) msg = `That's almost at 0. ${this.n}/${this.d} is here!`;
-    else if (k === this.d) msg = `That's almost at 1. ${this.n}/${this.d} is here!`;
+    if (k / this.d === this.target) {
+      const dir = bp.line.axis === 'x' ? (f > this.target ? 'left' : 'right') : f > this.target ? 'lower' : 'higher';
+      msg = `So close! A little ${bp.line.axis === 'x' ? 'to the ' : ''}${dir}.`;
+    } else if (k % this.d === 0) msg = `That's almost at ${k / this.d}. ${this.n}/${this.d} is here!`;
     else msg = `You built at about ${k}/${this.d}. ${this.n}/${this.d} is here!`;
     m.say(msg, 2.6);
 
     m.fx.after(2.2, () => {
-      m.bridge.supports = m.bridge.supports.filter((s) => s !== temp);
-      m.fx.burst(xAt(f), GROUND + 80, WOOD, { n: 18 });
-      m.fx.tween(m.bridge.sag, { amt: 0 }, 0.3, { done: () => (m.bridge.sag = null) });
+      bp.removeTemp(temp);
       if (this.attempts >= 3) return this.autoSolve();
       if (this.attempts >= 2) this.scaffold = 'labels';
       this.state = 'ready';
@@ -190,17 +202,12 @@ export class PlaceStep {
   }
 
   succeed(f, precise, earned = true) {
-    const { m } = this;
+    const { m, bp } = this;
     this.state = 'done';
-    const support = { f, drop: -220 };
-    m.bridge.supports.push(support);
-    m.fx.tween(support, { drop: 0 }, 0.45, { easing: ease.outBounce });
-    m.fx.after(0.3, () => {
-      sfx.thunk();
-      m.fx.burst(xAt(f), GROUND + 30, WOOD, { n: 16 });
-    });
+    bp.addItem(f);
+    const at = bp.line.axis === 'x' ? { x: bp.pos(f), y: GROUND } : { x: bp.guideEnd(), y: bp.pos(f) };
     m.fx.after(0.8, () =>
-      m.stepDone({ skill: 'place', correct: earned, firstTry: earned && this.attempts === 0, precise, fixed: earned && this.attempts > 0, at: { x: xAt(f), y: GROUND } }),
+      m.stepDone({ skill: 'place', correct: earned, firstTry: earned && this.attempts === 0, precise, fixed: earned && this.attempts > 0, at }),
     );
   }
 }
@@ -443,13 +450,13 @@ export class CutStep {
       const rects = this.pieceRects();
       this.flown = new Set(this.selected);
       this.flying = [...this.selected].map((i) => ({ ...rects[i] }));
-      const slot = X0 + m.bridge.deck * B;
+      const land = m.bp.landing();
       this.flying.forEach((fp, j) =>
-        m.fx.tween(fp, { x: slot, y: GROUND, w: B, h: B / 2 }, 0.6, { delay: j * 0.08, easing: ease.inQuad }),
+        m.fx.tween(fp, { x: land.x, y: land.y, w: land.w, h: land.h }, 0.6, { delay: j * 0.08, easing: ease.inQuad }),
       );
       const firstTry = this.attempts === 0 && this.takeAttempts === 0;
       m.fx.after(0.8, () =>
-        m.stepDone({ skill: 'cut', correct: true, firstTry, precise: false, fixed: !firstTry, at: { x: X0 + B * 3, y: GROUND } }),
+        m.stepDone({ skill: 'cut', correct: true, firstTry, precise: false, fixed: !firstTry, at: { x: m.bp.landing().x + 24, y: m.bp.landing().y } }),
       );
       return;
     }

@@ -4,6 +4,7 @@ import { drawBlock, drawPiece, fillArea, drawText } from '../../../shared/art/re
 import { drawSky, drawTerrain, drawPip, drawMineEntrance, GROUND, B } from './world.js';
 import { bubble, hudGems, hit, FONT, panel } from './ui.js';
 import { inventory, UNLOCKS } from './learn.js';
+import { BLUEPRINT_ORDER } from './blueprints.js';
 import { sfx } from './audio.js';
 import { ease } from './fx.js';
 import { W } from './stage.js';
@@ -17,12 +18,16 @@ export class Camp {
     this.game = game;
     this.fx = game.fx;
     this.pip = { x: 720, y: GROUND, jump: 0, outfit: save.get('outfit', 'pip'), flip: true };
-    const built = inventory.bridges();
-    this.cards = [
-      { id: 'bridge', title: 'Rope Bridge', active: true, built },
-      { id: 'tower', title: 'Watchtower', active: false },
-      { id: 'track', title: 'Minecart Track', active: false },
-    ].map((c, i) => ({ ...c, x: BOARD.x + 30 + i * 186, y: BOARD.y + 80, w: 168, h: 220, press: 0 }));
+    // Each blueprint unlocks once the one before it has been built.
+    const titles = Object.fromEntries(BLUEPRINT_ORDER.map((b) => [b.id, b.title]));
+    this.cards = BLUEPRINT_ORDER.map((b, i) => ({
+      id: b.id,
+      title: b.title,
+      active: !b.needs || inventory.built(b.needs) > 0,
+      lockedText: b.needs ? `Build a ${titles[b.needs]} first!` : '',
+      built: inventory.built(b.id),
+      x: BOARD.x + 30 + i * 186, y: BOARD.y + 80, w: 168, h: 220, press: 0,
+    }));
     const firstVisit = !save.get('visited', false);
     save.set('visited', true);
     this.speech = firstVisit ? "Hi, I'm Pip! Let's build something. Pick a blueprint!" : 'Pick a blueprint!';
@@ -104,7 +109,7 @@ export class Camp {
     ctx.fillText(c.title, c.x + c.w / 2, y + 150);
     ctx.font = FONT(18, 600);
     ctx.fillStyle = c.active ? '#5a5670' : '#6e6b80';
-    ctx.fillText(c.active ? (c.built ? `Built: ${c.built}` : 'Tap to build!') : 'Coming soon', c.x + c.w / 2, y + 186);
+    ctx.fillText(c.active ? (c.built ? `Built: ${c.built}` : 'Tap to build!') : '🔒 Locked', c.x + c.w / 2, y + 186);
     ctx.textAlign = 'left';
   }
 
@@ -136,13 +141,13 @@ export class Camp {
       if (hit(c, p)) {
         if (!c.active) {
           sfx.oops();
-          this.speech = "That one's not ready yet. Try the Rope Bridge!";
+          this.speech = c.lockedText;
           this.fx.after(3, () => (this.speech = null));
           return;
         }
         sfx.tap();
         c.press = 4;
-        this.fx.after(0.15, () => this.game.go('mission'));
+        this.fx.after(0.15, () => this.game.go('mission', { blueprint: c.id }));
         return;
       }
     }

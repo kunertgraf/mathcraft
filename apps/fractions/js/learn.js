@@ -51,14 +51,17 @@ export function markSeen(stepType) {
 }
 
 // ---------- Step generation ----------
-function makePlace(avoid) {
+// Place targets run across the whole line: 0–1, or 0–2 on longer lines (fractions > 1).
+// Whole numbers are skipped; they're the labelled landmarks.
+function makePlace(avoid, max = 1) {
   const dens = denominators('place');
-  for (let tries = 0; tries < 20; tries++) {
+  for (let tries = 0; tries < 30; tries++) {
     const d = rnd(dens);
-    const n = randInt(1, d - 1);
-    if (!avoid.some((f) => Math.abs(f - n / d) < 0.09)) return { type: 'place', n, d, scaffold: scaffold('place') };
+    const n = randInt(1, max * d - 1);
+    if (n % d === 0) continue;
+    if (!avoid.some((f) => Math.abs(f - n / d) < 0.09 * max)) return { type: 'place', n, d, scaffold: scaffold('place') };
   }
-  return { type: 'place', n: 1, d: 2, scaffold: scaffold('place') };
+  return { type: 'place', n: max === 1 ? 1 : 3, d: 2, scaffold: scaffold('place') };
 }
 
 function makeCut() {
@@ -90,13 +93,12 @@ function makeCompare() {
   return { type: 'compare', a: [n1, d], b: [n2, d], kind: 'sameDen' };
 }
 
-// A Rope Bridge mission: 8 interleaved steps.
-export function planMission() {
-  const order = ['cut', 'place', 'fill', 'compare', 'place', 'cut', 'fill', 'place'];
+// A mission: the blueprint's 8 interleaved steps.
+export function planMission(bp) {
   const placed = [];
-  return order.map((type) => {
+  return bp.order.map((type) => {
     if (type === 'place') {
-      const s = makePlace(placed);
+      const s = makePlace(placed, bp.line.max);
       placed.push(s.n / s.d);
       return s;
     }
@@ -173,9 +175,11 @@ export const inventory = {
     save.set('unlocked', [...have, next.id]);
     return next;
   },
-  bridges: () => save.get('bridges', 0),
-  addBridge() {
-    save.set('bridges', inventory.bridges() + 1);
+  built: (id) => save.get('built', { bridge: save.get('bridges', 0) })[id] ?? 0,
+  addBuilt(id) {
+    const b = save.get('built', { bridge: save.get('bridges', 0) });
+    b[id] = (b[id] ?? 0) + 1;
+    save.set('built', b);
   },
   addStar: () => save.addStars(1),
   stars: () => save.stars(),

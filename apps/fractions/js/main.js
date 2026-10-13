@@ -16,9 +16,9 @@ const game = {
   fx: new FX(),
   t: 0,
   scene: null,
-  go(name) {
+  go(name, params = {}) {
     this.fx.clear();
-    this.scene = new SCENES[name](this);
+    this.scene = new SCENES[name](this, params);
   },
 };
 game.go('camp');

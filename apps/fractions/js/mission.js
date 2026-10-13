@@ -1,7 +1,8 @@
-// A Rope Bridge mission: 8 build steps; each correct answer grows the bridge.
+// A blueprint mission: 8 build steps; each correct answer grows the structure.
 import { UI, RAMPS } from '../../../shared/art/palette.js';
 import { drawSprite, fillArea, drawText, drawPiece } from '../../../shared/art/render.js';
-import { drawSky, drawTerrain, drawBridge, drawPip, GROUND, DECK_SEGMENTS } from './world.js';
+import { drawPip, GROUND } from './world.js';
+import { BLUEPRINTS } from './blueprints.js';
 import { instruction, bubble, hudGems, rewardBanner, button, panel, hit, FONT } from './ui.js';
 import { STEPS } from './steps.js';
 import { planMission, record, inventory } from './learn.js';
@@ -13,13 +14,13 @@ import { store } from '../../../shared/store.js';
 const RAPID_SEC = 3;
 
 export class Mission {
-  constructor(game) {
+  constructor(game, { blueprint = 'bridge' } = {}) {
     this.game = game;
     this.fx = game.fx;
-    this.steps = planMission();
+    this.bp = new BLUEPRINTS[blueprint](this.fx);
+    this.steps = planMission(this.bp);
     this.idx = 0;
-    this.bridge = { deck: 0, drops: {}, supports: [], sag: null };
-    this.pip = { x: 96, y: GROUND, jump: 0, outfit: store.forApp('fractions').get('outfit', 'pip') };
+    this.pip = { ...this.bp.pipStart, jump: 0, outfit: store.forApp('fractions').get('outfit', 'pip') };
     this.earned = { gems: 0, stars: 0, unlocks: [], blocks: {} };
     this.correctCount = 0;
     this.speech = null;
@@ -108,7 +109,7 @@ export class Mission {
       }
     }
 
-    this.growDeck(this.idx + 1);
+    this.bp.grow(this.idx + 1, this.steps.length);
     this.idx += 1;
     this.step = null;
     if (this.idx < this.steps.length) this.fx.after(wait, () => this.startStep());
@@ -130,34 +131,18 @@ export class Mission {
     });
   }
 
-  growDeck(stepsDone) {
-    const target = Math.round((DECK_SEGMENTS * stepsDone) / this.steps.length);
-    for (let i = this.bridge.deck; i < target; i++) {
-      const k = i - this.bridge.deck;
-      const drop = { v: -160 };
-      this.bridge.drops[i] = drop;
-      this.fx.tween(drop, { v: 0 }, 0.5, { delay: k * 0.12, easing: ease.outBounce });
-      this.fx.after(0.3 + k * 0.12, () => sfx.thunk());
-    }
-    this.bridge.deck = Math.max(this.bridge.deck, target);
-  }
-
   finish() {
     const { fx } = this;
-    inventory.addBridge();
+    inventory.addBuilt(this.bp.id);
     sfx.fanfare();
-    this.say('We did it! Let me test it…', 3);
     for (let k = 0; k < 6; k++)
       fx.after(k * 0.25, () =>
         fx.burst(200 + Math.random() * 620, 200 + Math.random() * 150, [UI.accent, UI.good, '#ffffff', RAMPS.diamond[1], UI.bad], { n: 26, speed: 300 }),
       );
-    fx.tween(this.pip, { x: 860 }, 3.2, {
-      delay: 0.8,
-      easing: ease.linear,
-      done: () => {
-        this.summary = { born: this.t };
-        this.say(null);
-      },
+    this.bp.finish(this, () => {
+      this.walking = false;
+      this.summary = { born: this.t };
+      this.say(null);
     });
   }
 
@@ -175,13 +160,12 @@ export class Mission {
 
   draw(ctx) {
     const view = this.game.stage.view;
-    drawSky(ctx, view, this.t);
-    drawTerrain(ctx, view);
-    drawBridge(ctx, this.bridge);
-    // walking bob while crossing
-    const walking = this.idx >= this.steps.length && !this.summary;
-    const bob = walking ? Math.abs(Math.sin(this.t * 10)) * 4 : 0;
+    this.bp.drawWorld(ctx, view, this.t);
+    // Blueprint finales can move Pip along a path (climbing, riding); walking bobs.
+    if (this.pipPath) Object.assign(this.pip, this.pipPath());
+    const bob = this.walking ? Math.abs(Math.sin(this.t * 10)) * 4 : 0;
     drawPip(ctx, { ...this.pip, jump: this.pip.jump + bob });
+    this.bp.drawFront(ctx);
 
     const b = this.banners[0];
     if (this.step) {
@@ -223,7 +207,7 @@ export class Mission {
   drawSummary(ctx) {
     const w = 520, h = 330, x = (W - w) / 2, y = 150;
     panel(ctx, x, y, w, h);
-    drawText(ctx, 'BRIDGE COMPLETE!', W / 2, y + 28, { scale: 4, colour: '#b4541e', shadow: null, align: 'center' });
+    drawText(ctx, this.bp.doneTitle, W / 2, y + 28, { scale: 4, colour: '#b4541e', shadow: null, align: 'center' });
     ctx.font = FONT(26);
     ctx.fillStyle = '#14152b';
     ctx.textAlign = 'center';
@@ -238,7 +222,7 @@ export class Mission {
     got.forEach(([name, n], i) => {
       const row = Math.floor(i / PER_ROW), inRow = Math.min(PER_ROW, got.length - row * PER_ROW);
       const bx = W / 2 - (inRow * SP) / 2 + (i % PER_ROW) * SP;
-      const by = y + 132 + row * 48;
+      const by = y + 144 + row * 48;
       drawPiece(ctx, name, bx + 8, by, 36);
       drawText(ctx, `+${n}`, bx + 50, by + 10, { scale: 2, colour: '#b4541e', shadow: null });
     });

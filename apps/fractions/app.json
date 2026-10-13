@@ -14,6 +14,7 @@
     "js/camp.js",
     "js/mission.js",
     "js/steps.js",
+    "js/blueprints.js",
     "js/night.js",
     "js/build.js",
     "js/base.js",
