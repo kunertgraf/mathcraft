@@ -43,6 +43,10 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
   new recipe is just a new entry. The app draws measuring cups/spoons for each amount (1 ½ cups → 1 cup + ½ cup),
   saves progress and running timers (resume within 12 h), and keeps the screen awake while cooking.
   `?test` exposes `window.__cook`. Rewrite recipe steps in our own kid-friendly words; don't copy source text.
+- `apps/times/` — **Times Tables**, 1990s timed worksheets (Mad Minute 30/1 min, Big 100/5 min, each table 2s–12s
+  30/1 min, and "Fix My Mistakes" built from missed facts). On-screen keypad, LCD stopwatch, red-pen grading,
+  personal bests, bronze/silver/gold per sheet, and a 20-sticker achievement book. Logic in `tests.js`, UI in `app.js`.
+  `?test` exposes `window.__times` (`setLeft(sec)` jumps the clock).
 - `apps/demo/` — minimal example of the app contract (not listed in `apps.json`).
 - Shared pixel-art kit: `shared/art/` (palette, procedural textures, sprites/font, render helpers).
   Preview everything at `tools/artlab/`.
