@@ -1,9 +1,10 @@
 {
   "title": "Playground",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "apps": [
     "fractions",
     "recipes",
-    "times"
+    "times",
+    "builds"
   ]
 }

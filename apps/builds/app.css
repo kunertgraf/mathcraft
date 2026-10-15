@@ -1,0 +1,169 @@
+/* Lego Builds: printed-booklet look, bright brick colors, big buttons. */
+:root {
+  --paper: #f3f6f8;
+  --frame: #dfe7ed;
+  --ink: #15191c;
+  --muted: #5c6a75;
+  --line: #b9c7d2;
+  --red: #e3000b;
+  --yellow: #ffd500;
+  --sub: #dbe9f4;
+  --sub-line: #6c9cc4;
+}
+
+html, body { background: var(--frame); color: var(--ink); }
+#app { height: 100%; }
+
+main {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 72px; /* the hub's home button */
+  min-height: 60px;
+}
+.bar h1 { margin: 0; font-size: 1.7rem; font-weight: 800; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.where { font-size: 1.2rem; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.back { font-weight: 700; font-size: 1.1rem; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+
+/* ---------- List ---------- */
+.list { overflow-y: auto; }
+.builds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 18px;
+}
+.build {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 6px;
+  padding: 14px;
+  background: #fff;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 6px 0 var(--line);
+}
+.build:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line); }
+.build img { width: 100%; aspect-ratio: 16 / 11; object-fit: contain; background: var(--paper); border-radius: 10px; }
+.build-title { font-size: 1.5rem; font-weight: 800; }
+.build-blurb { color: var(--muted); }
+.build-status { font-weight: 700; color: var(--red); }
+.build.soon {
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-style: dashed;
+  box-shadow: none;
+  min-height: 200px;
+}
+.build.soon span { font-size: 3rem; }
+
+/* ---------- Book ---------- */
+.sheet {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--paper);
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  will-change: transform; /* iPad Safari sometimes skips painting big images without its own layer */
+}
+.sheet.sub { background: var(--sub); border-color: var(--sub-line); }
+.sheet img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.sub-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--sub-line);
+  color: #fff;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.nav { display: grid; grid-template-columns: 1fr 1.8fr; gap: 12px; }
+.nav button {
+  font-size: 1.5rem;
+  font-weight: 800;
+  border-radius: 16px;
+  padding: 18px 16px;
+  background: #fff;
+  border: 3px solid var(--line);
+  box-shadow: 0 5px 0 var(--line);
+}
+.nav .next { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 5px 0 #9e0008; }
+.nav button:active { transform: translateY(4px); box-shadow: none; }
+.nav button:disabled { opacity: 0.4; }
+
+.strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.strip button {
+  flex: none;
+  min-width: 48px;
+  padding: 10px 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  background: #fff;
+  border: 2px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.strip button.sub { background: var(--sub); }
+.strip button.done { border-color: #7aa38a; color: #3d6b4f; }
+.strip button[aria-current] { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.tips { display: flex; align-items: flex-start; gap: 12px; }
+.tip-toggle { flex: none; font-weight: 700; border: 2px solid var(--line); border-radius: 999px; padding: 8px 14px; background: #fff; }
+.tip-toggle.on { background: var(--yellow); border-color: #d4b000; }
+.tip { margin: 0; font-size: 1.1rem; line-height: 1.45; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 14px; }
+
+/* ---------- Finished ---------- */
+.celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  background: rgb(21 25 28 / 0.75);
+  color: #fff;
+  animation: fade 0.3s;
+}
+.celebrate h2 { font-size: 2.4rem; margin: 10px 20px; }
+.celebrate p { color: #ccd; font-size: 1.2rem; }
+.trophy { font-size: 8rem; animation: bounce 1s ease-in-out infinite; }
+.brick {
+  position: fixed;
+  top: -30px;
+  z-index: 6;
+  width: 22px;
+  height: 14px;
+  border-radius: 3px;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.2);
+  pointer-events: none;
+  animation: fall linear forwards;
+}
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes bounce { 50% { transform: translateY(-20px) rotate(-6deg); } }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+@media (max-aspect-ratio: 1/1) {
+  .nav button { font-size: 1.3rem; }
+}

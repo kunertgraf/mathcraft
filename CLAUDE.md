@@ -47,6 +47,11 @@ apps (games, stories, tools). Math games are the first content, but the hub is c
   30/1 min, and "Fix My Mistakes" built from missed facts). On-screen keypad, LCD stopwatch, red-pen grading,
   personal bests, bronze/silver/gold per sheet, and a 20-sticker achievement book. Logic in `tests.js`, UI in `app.js`.
   `?test` exposes `window.__times` (`setLeft(sec)` jumps the clock).
+- `apps/builds/` — **Lego Builds**, booklet-style instructions: one big page image at a time, Back/Next, swipe,
+  step strip (blue = sub-assembly), optional hints, progress saved per build, celebration + 3 stars on finishing.
+  Builds are data in `builds.js`; page images live in `apps/builds/<build id>/<page id>.jpg` and must be listed in
+  `app.json` `files` for offline. The Portal Gearbox pages come from `../portals/lego-manual/pages`.
+  `?test` exposes `window.__builds`.
 - `apps/demo/` — minimal example of the app contract (not listed in `apps.json`).
 - Shared pixel-art kit: `shared/art/` (palette, procedural textures, sprites/font, render helpers).
   Preview everything at `tools/artlab/`.
