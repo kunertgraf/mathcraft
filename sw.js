@@ -1,6 +1,8 @@
 // Network-first service worker: always fresh when online (so pushed updates
 // show up on next launch), falls back to cache when offline.
-const CACHE = 'hub-v3';
+// Another hub shares this origin (kunertgraf.github.io), so only ever touch caches with our prefix.
+const CACHE_PREFIX = 'hub-';
+const CACHE = CACHE_PREFIX + 'v4';
 const NETWORK_TIMEOUT_MS = 3000;
 
 const SHELL = [
@@ -29,7 +31,7 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
